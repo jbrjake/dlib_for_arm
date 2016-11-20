@@ -872,7 +872,6 @@ namespace dlib
         interpolate_bilinear
     )
     {
-		long long t0 = currentTimeInMilliseconds();
 		// make sure requires clause is not broken
         DLIB_ASSERT( is_same_object(in_img_, out_img_) == false ,
             "\t void resize_image()"
@@ -904,8 +903,6 @@ namespace dlib
 			pthread_join(do_resize_image_thread[i], NULL);
 		}
 #endif
-		long long t1 = currentTimeInMilliseconds();
-		std::cout << "total rows = " << out_img_.nr() << " takes " << t1-t0 << " ms" << std::endl;
 #else
 
         const_image_view<image_type> in_img(in_img_);
