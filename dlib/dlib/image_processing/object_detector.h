@@ -11,13 +11,6 @@
 
 namespace dlib
 {
-	long long currentTimeInMilliseconds()
-	{
-		struct timeval tv;
-		gettimeofday(&tv, NULL);
-		return ((tv.tv_sec * 1000) + (tv.tv_usec / 1000));
-	}
-
 // ----------------------------------------------------------------------------------------
 
     struct rect_detection
@@ -438,16 +431,10 @@ namespace dlib
         double adjust_threshold
     ) 
     {
-		long long t0 = currentTimeInMilliseconds();
         scanner.load(img);
-		long long t1 = currentTimeInMilliseconds();
-		//std::cout << "t1-t0 take " << t1-t0 << " ms "<< std::endl;    
-		LOGD("t1-t0 take %lld ms",t1-t0);    
 		
         std::vector<std::pair<double, rectangle> > dets;
         std::vector<rect_detection> dets_accum;
-		//long long t2 = currentTimeInMilliseconds();
-		//std::cout << "t2-t1 take " << t2-t1 << " ms "<< std::endl; 
 
         for (unsigned long i = 0; i < w.size(); ++i)
         {
@@ -462,9 +449,6 @@ namespace dlib
                 dets_accum.push_back(temp);
             }
         }
-		long long t3 = currentTimeInMilliseconds();
-		//std::cout << "t3-t2 take " << t3-t2 << " ms "<< std::endl;    
-		LOGD("t3-t1 take %lld ms",t3-t1);    
 
         // Do non-max suppression
         final_dets.clear();
@@ -477,9 +461,6 @@ namespace dlib
 
             final_dets.push_back(dets_accum[i]);
         }
-		long long t4 = currentTimeInMilliseconds();
-		//std::cout << "t4-t3 take " << t4-t3 << " ms "<< std::endl;  		
-		LOGD("t4-t3 take %lld ms",t4-t3);    
     }
 
 // ----------------------------------------------------------------------------------------

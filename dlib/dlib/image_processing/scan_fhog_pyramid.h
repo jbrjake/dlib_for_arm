@@ -596,7 +596,6 @@ namespace dlib
 		{
 			param_for_fill_in_feats<pixel_type, feature_extractor_type, image_type>* p = (param_for_fill_in_feats<pixel_type, feature_extractor_type, image_type>*)ptr;
 			unsigned long i;
-			long long total_thread_time = 0;
 			while(1)
 			{
 				pthread_mutex_lock(&p->mutex);
@@ -605,15 +604,10 @@ namespace dlib
 				pthread_mutex_unlock(&p->mutex);
 				if(i < (*p->feats).size() )
 				{
-					long long t0 = currentTimeInMilliseconds();
 					(*p->fe)((*p->image_pyr)[i], (*p->feats)[i], p->cell_size,p->filter_rows_padding,p->filter_cols_padding);
-					long long t1 = currentTimeInMilliseconds();
-					total_thread_time += (t1-t0);
 				}
 				else
 				{
-					std::cout << " total_thread_time = " << total_thread_time <<" tid = " << pthread_self() << std::endl;
-					//LOGD("total_thread_time = %lld tid = %ld",total_thread_time,pthread_self());
 					break;
 				}
 			}
@@ -654,7 +648,6 @@ namespace dlib
 			//std::cout << "feats.size() = " << feats.size() << std::endl;
 #if 1
 			typedef typename image_traits<image_type>::pixel_type pixel_type;
-			long long t0 = currentTimeInMilliseconds();
 
 			array<array2d<pixel_type>> image_pyr;
 			image_pyr.set_max_size(levels);
@@ -665,15 +658,12 @@ namespace dlib
 			{
 				pyr(image_pyr[i], image_pyr[i+1]);
 			}
-			long long t1 = currentTimeInMilliseconds();
 
-			impl::total_pyr_time = (t1-t0);
 			// build our feature pyramid
 			DLIB_ASSERT(feats[0].size() == fe.get_num_planes(), 
 				"Invalid feature extractor used with dlib::scan_fhog_pyramid.  The output does not have the \n"
 				"indicated number of planes.");
 
-			t0 = currentTimeInMilliseconds();
 			param_for_fill_in_feats<pixel_type, feature_extractor_type,image_type> param;
 			param.cell_size = cell_size;
 			param.fe = (feature_extractor_type*)&fe;
@@ -694,8 +684,6 @@ namespace dlib
 			{	
 				pthread_join(fill_in_fe_thread[i], NULL);
 			}
-			t1 = currentTimeInMilliseconds();
-			impl::total_fe_time = (t1-t0);	
 #else
             // build our feature pyramid
             long long t0 = currentTimeInMilliseconds();
@@ -733,9 +721,6 @@ namespace dlib
                 }
             }
 #endif			
-			//std::cout << " total_pyr_time = " << impl::total_pyr_time << std::endl;
-			//std::cout << " total_fe_time = " << impl::total_fe_time << std::endl;
-			LOGD("total_pyr_time = %lld total_fe_time = %lld",impl::total_pyr_time,impl::total_fe_time);
         }
     }
 
@@ -977,12 +962,9 @@ namespace dlib
 			void* ptr
 		)
 		{
-			long long t0 = currentTimeInMilliseconds();
 			param_for_detect<fhog_filterbank, feature_extractor_type>* p = (param_for_detect<fhog_filterbank, feature_extractor_type>*)ptr;
 			impl::detect_from_fhog_pyramid<pyramid_type>(*(p->feats), *(p->fe), *(p->w), p->thresh,
 							p->det_box_height, p->det_box_width, p->cell_size, p->filter_rows_padding, p->filter_cols_padding, *(p->dets));
-			long long t1 = currentTimeInMilliseconds();
-			std::cout << "single thread finished time = " << t1-t0 << std::endl;				
 			return NULL;			
 		}		
     }
@@ -1015,7 +997,6 @@ namespace dlib
         compute_fhog_window_size(width,height);
 
 		const int num_of_threads = 3;
-		long long t0 = currentTimeInMilliseconds();
         array<array<array2d<float> >> feats_dp[num_of_threads];
 		std::vector<std::pair<double, rectangle> > dets_dp[num_of_threads];
 		for(int h=0;h<num_of_threads;h++)
@@ -1039,8 +1020,6 @@ namespace dlib
 				}
 			}
 		}
-		long long t1 = currentTimeInMilliseconds();
-		std::cout << "build feats time = " << t1-t0 << std::endl;
 		pthread_t detect_thread[num_of_threads];
 		impl::param_for_detect<fhog_filterbank, feature_extractor_type> param[num_of_threads];
 		for(int i=0;i<num_of_threads;i++)
@@ -1057,14 +1036,10 @@ namespace dlib
 			param[i].dets = &dets_dp[i];
 			pthread_create(&detect_thread[i], NULL, &impl::detect_from_fhog_pyramid_wrapper<fhog_filterbank, feature_extractor_type,pyramid_type>, (void*)&param[i]);
 		}
-		long long t2 = currentTimeInMilliseconds();
-		std::cout << "create threads time = " << t2-t1 << std::endl;		
 		for(int i=0;i<num_of_threads;i++)
 		{	
 			pthread_join(detect_thread[i], NULL);
 		}
-		long long t3 = currentTimeInMilliseconds();
-		std::cout << "wait for threads are finished time = " << t3-t2 << std::endl;		
 #if 0			
 		for(int h=0;h<num_of_threads;h++)
 		{
@@ -1080,8 +1055,6 @@ namespace dlib
 				dets_dp[h].pop_back();
 			}
 		}
-		long long t4 = currentTimeInMilliseconds();
-		std::cout << "build dets time = " << t4-t3 << std::endl;			
     }
 
 // ----------------------------------------------------------------------------------------
