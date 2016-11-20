@@ -415,9 +415,6 @@ namespace dlib
 
     namespace impl
     {
-		long long total_pyr_time = 0;
-		long long total_fe_time = 0;
-		
 		template <typename fhog_filterbank>
         rectangle apply_filters_to_fhog (
             const fhog_filterbank& w,
