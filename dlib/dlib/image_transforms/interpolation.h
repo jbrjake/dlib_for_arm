@@ -474,8 +474,7 @@ namespace dlib
 
         const_image_view<image_type1> imgv(in_img);
         image_view<image_type2> out_imgv(out_img);
-		std::cout << " area.top() = " << area.top() << " area.bottom() = " << area.bottom() << std::endl;
-		std::cout << " area.left() = " << area.left() << " area.right() = " << area.right() << std::endl;
+
         for (long r = area.top(); r <= area.bottom(); ++r)
         {
             for (long c = area.left(); c <= area.right(); ++c)
